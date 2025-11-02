@@ -10,10 +10,25 @@ import Foundation
 public struct Message: Codable {
     public let role: String
     public let content: String
-    
+
     public init(role: String, content: String) {
         self.role = role
         self.content = content
+    }
+}
+
+/// Represents image content that can be either a URL or base64-encoded data
+public enum ImageContent {
+    /// Image from a URL
+    case url(String, detail: ImageDetail? = nil)
+    /// Image from base64-encoded data
+    case base64(Data, detail: ImageDetail? = nil)
+
+    /// Image detail level for vision models
+    public enum ImageDetail: String, Codable {
+        case auto = "auto"
+        case low = "low"
+        case high = "high"
     }
 }
 

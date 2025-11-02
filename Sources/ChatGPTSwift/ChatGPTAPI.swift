@@ -120,7 +120,7 @@ public class ChatGPTAPI: @unchecked Sendable {
         responseFormat: Components.Schemas.CreateChatCompletionRequest.response_formatPayload? =
             nil,
         stop: Components.Schemas.CreateChatCompletionRequest.stopPayload? = nil,
-        imageData: Data? = nil
+        images: [ImageContent]? = nil
     ) async throws -> AsyncMapSequence<
         AsyncThrowingPrefixWhileSequence<
             AsyncThrowingMapSequence<
@@ -131,7 +131,7 @@ public class ChatGPTAPI: @unchecked Sendable {
             >
         >, String
     > {
-        try await sendMessageStreamInternal(text: text, model: .init(value1: model, value2: nil), systemText: systemText, temperature: temperature, maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, imageData: imageData)
+        try await sendMessageStreamInternal(text: text, model: .init(value1: model, value2: nil), systemText: systemText, temperature: temperature, maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, images: images)
     }
     
     public func sendMessageStream(
@@ -143,7 +143,7 @@ public class ChatGPTAPI: @unchecked Sendable {
         responseFormat: Components.Schemas.CreateChatCompletionRequest.response_formatPayload? =
             nil,
         stop: Components.Schemas.CreateChatCompletionRequest.stopPayload? = nil,
-        imageData: Data? = nil
+        images: [ImageContent]? = nil
     ) async throws -> AsyncMapSequence<
         AsyncThrowingPrefixWhileSequence<
             AsyncThrowingMapSequence<
@@ -154,7 +154,7 @@ public class ChatGPTAPI: @unchecked Sendable {
             >
         >, String
     > {
-        try await sendMessageStreamInternal(text: text, model: .init(value1: nil, value2: model), systemText: systemText, temperature: temperature, maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, imageData: imageData)
+        try await sendMessageStreamInternal(text: text, model: .init(value1: nil, value2: model), systemText: systemText, temperature: temperature, maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, images: images)
     }
 
     private func sendMessageStreamInternal(
@@ -166,7 +166,7 @@ public class ChatGPTAPI: @unchecked Sendable {
         responseFormat: Components.Schemas.CreateChatCompletionRequest.response_formatPayload? =
             nil,
         stop: Components.Schemas.CreateChatCompletionRequest.stopPayload? = nil,
-        imageData: Data? = nil
+        images: [ImageContent]? = nil
     ) async throws -> AsyncMapSequence<
         AsyncThrowingPrefixWhileSequence<
             AsyncThrowingMapSequence<
@@ -178,8 +178,8 @@ public class ChatGPTAPI: @unchecked Sendable {
         >, String
     > {
         var messages = generateInternalMessages(from: text, systemText: systemText)
-        if let imageData {
-            messages.append(createMessage(imageData: imageData))
+        if let images = images, !images.isEmpty {
+            messages.append(createMessage(images: images, text: text))
         }
 
         let response = try await client.createChatCompletion(
@@ -234,9 +234,9 @@ public class ChatGPTAPI: @unchecked Sendable {
         responseFormat: Components.Schemas.CreateChatCompletionRequest.response_formatPayload? =
             nil,
         stop: Components.Schemas.CreateChatCompletionRequest.stopPayload? = nil,
-        imageData: Data? = nil
+        images: [ImageContent]? = nil
     ) async throws -> String {
-        try await sendMessageInternal(text: text, model: .init(value1: model, value2: nil), systemText: systemText, temperature: temperature, maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, imageData: imageData)
+        try await sendMessageInternal(text: text, model: .init(value1: model, value2: nil), systemText: systemText, temperature: temperature, maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, images: images)
     }
     
     public func sendMessage(
@@ -248,9 +248,9 @@ public class ChatGPTAPI: @unchecked Sendable {
         responseFormat: Components.Schemas.CreateChatCompletionRequest.response_formatPayload? =
             nil,
         stop: Components.Schemas.CreateChatCompletionRequest.stopPayload? = nil,
-        imageData: Data? = nil
+        images: [ImageContent]? = nil
     ) async throws -> String {
-        try await sendMessageInternal(text: text, model: .init(value1: nil, value2: model), systemText: systemText, temperature: temperature, maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, imageData: imageData)
+        try await sendMessageInternal(text: text, model: .init(value1: nil, value2: model), systemText: systemText, temperature: temperature, maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, images: images)
     }
 
     private func sendMessageInternal(
@@ -262,11 +262,11 @@ public class ChatGPTAPI: @unchecked Sendable {
         responseFormat: Components.Schemas.CreateChatCompletionRequest.response_formatPayload? =
             nil,
         stop: Components.Schemas.CreateChatCompletionRequest.stopPayload? = nil,
-        imageData: Data? = nil
+        images: [ImageContent]? = nil
     ) async throws -> String {
         var messages = generateInternalMessages(from: text, systemText: systemText)
-        if let imageData {
-            messages.append(createMessage(imageData: imageData))
+        if let images = images, !images.isEmpty {
+            messages.append(createMessage(images: images, text: text))
         }
 
         let response = try await client.createChatCompletion(
@@ -302,9 +302,9 @@ public class ChatGPTAPI: @unchecked Sendable {
         stop: Components.Schemas.CreateChatCompletionRequest.stopPayload? = nil,
         systemText: String =
             "Don't make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous.",
-        imageData: Data? = nil
+        images: [ImageContent]? = nil
     ) async throws -> ChatCompletionResponseMessage {
-        try await callFunctionInternal(prompt: prompt, tools: tools, model: .init(value1: nil, value2: model), maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, systemText: systemText, imageData: imageData)
+        try await callFunctionInternal(prompt: prompt, tools: tools, model: .init(value1: nil, value2: model), maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, systemText: systemText, images: images)
     }
     
     public func callFunction(
@@ -317,9 +317,9 @@ public class ChatGPTAPI: @unchecked Sendable {
         stop: Components.Schemas.CreateChatCompletionRequest.stopPayload? = nil,
         systemText: String =
             "Don't make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous.",
-        imageData: Data? = nil
+        images: [ImageContent]? = nil
     ) async throws -> ChatCompletionResponseMessage {
-        try await callFunctionInternal(prompt: prompt, tools: tools, model: .init(value1: model, value2: nil), maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, systemText: systemText, imageData: imageData)
+        try await callFunctionInternal(prompt: prompt, tools: tools, model: .init(value1: model, value2: nil), maxTokens: maxTokens, responseFormat: responseFormat, stop: stop, systemText: systemText, images: images)
     }
 
     private func callFunctionInternal(
@@ -332,11 +332,11 @@ public class ChatGPTAPI: @unchecked Sendable {
         stop: Components.Schemas.CreateChatCompletionRequest.stopPayload? = nil,
         systemText: String =
             "Don't make assumptions about what values to plug into functions. Ask for clarification if a user request is ambiguous.",
-        imageData: Data? = nil
+        images: [ImageContent]? = nil
     ) async throws -> ChatCompletionResponseMessage {
         var messages = generateInternalMessages(from: prompt, systemText: systemText)
-        if let imageData {
-            messages.append(createMessage(imageData: imageData))
+        if let images = images, !images.isEmpty {
+            messages.append(createMessage(images: images, text: prompt))
         }
 
         let response = try await client.createChatCompletion(
@@ -527,20 +527,51 @@ public class ChatGPTAPI: @unchecked Sendable {
         return error
     }
 
-    func createMessage(imageData: Data) -> Components.Schemas.ChatCompletionRequestMessage {
-        .ChatCompletionRequestUserMessage(
-            .init(
-                content: .case2([
-                    .ChatCompletionRequestMessageContentPartImage(
-                        .init(
-                            _type: .image_url,
-                            image_url:
-                                .init(
-                                    url:
-                                        "data:image/jpeg;base64,\(imageData.base64EncodedString())",
-                                    detail: .auto)))
-                ]),
-                role: .user))
+    func createMessage(images: [ImageContent], text: String) -> Components.Schemas.ChatCompletionRequestMessage {
+        var contentParts: [Components.Schemas.ChatCompletionRequestMessageContentPart] = []
+
+        // Add text content if provided
+        if !text.isEmpty {
+            contentParts.append(.ChatCompletionRequestMessageContentPartText(.init(_type: .text, text: text)))
+        }
+
+        // Add image content parts
+        for image in images {
+            let url: String
+            let detail: Components.Schemas.ChatCompletionRequestMessageContentPartImage.image_urlPayload.detailPayload
+
+            switch image {
+            case .url(let imageUrl, let imageDetail):
+                url = imageUrl
+                detail = imageDetail.map { detail in
+                    switch detail {
+                    case .auto: return .auto
+                    case .low: return .low
+                    case .high: return .high
+                    }
+                } ?? .auto
+            case .base64(let data, let imageDetail):
+                url = "data:image/jpeg;base64,\(data.base64EncodedString())"
+                detail = imageDetail.map { detail in
+                    switch detail {
+                    case .auto: return .auto
+                    case .low: return .low
+                    case .high: return .high
+                    }
+                } ?? .auto
+            }
+
+            contentParts.append(.ChatCompletionRequestMessageContentPartImage(
+                .init(
+                    _type: .image_url,
+                    image_url: .init(url: url, detail: detail)
+                )
+            ))
+        }
+
+        return .ChatCompletionRequestUserMessage(
+            .init(content: .case2(contentParts), role: .user)
+        )
     }
 
 }
